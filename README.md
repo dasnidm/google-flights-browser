@@ -1,6 +1,6 @@
 # Google Flights Browser
 
-A Codex skill for comparing Google Flights fares through the website. Use a browser that can open Google Flights. Fare research uses the browser interface and needs no separate fare API, account, or key.
+A Codex skill for comparing Google Flights fares through the website. Use a browser that can open Google Flights. Fare research uses the browser interface and needs no separate fare API or key.
 
 ## Install
 
@@ -9,11 +9,13 @@ A Codex skill for comparing Google Flights fares through the website. Use a brow
 
 ## Example requests
 
+- `$google-flights-browser Use Google AI Flight Deals from BER to anywhere in Europe, December 4–8, 2026, nonstop round trip under €150.`
+
 - `$google-flights-browser Find 4–6 night trips from BER to anywhere in February 2027. Compare the three lowest verified totals.`
 - `$google-flights-browser Compare BER, HAM, and FRA to LHR on January 12 or 14, 2027. Keep LHR fixed and report which searches returned flights.`
 - `$google-flights-browser Find combinations from BER to LIS in the first week of February 2027. Include direct, protected connections, and separate tickets only when the actual layover is at least four hours.`
 
-The skill uses Explore for an open destination. For an open origin, it searches a defined set of origin airports in the requested direction. For fixed endpoints, use a date grid for discovery or enumerate every requested query first. The result includes query coverage and separates provisional prices, detailed quotes, and unpriced candidates.
+With the origin fixed and destination open, the skill can use Google's AI Flight Deals for a natural-language trip request or Explore for map-based browsing. It verifies shortlisted deals in the regular flight-search results. For an open origin, it searches a defined set of origin airports in the requested direction. For fixed endpoints, use a date grid for discovery or enumerate every requested query first. The result includes query coverage and separates provisional prices, detailed quotes, and unpriced candidates.
 
 ## Offline planning tools
 
@@ -27,5 +29,6 @@ A schedule establishes which journeys fit the modeled conditions. Ticket prices 
 ## Verification
 
 - Local Chrome returned flight results for BER and HAM to LHR on both January 12 and January 14, 2027, and Explore returned destinations from Berlin.
+- In local Chrome, a Korean-language AI Flight Deals search for BER to anywhere in Europe returned eight recommendations for the requested dates and filters. Selecting the Milan recommendation opened standard flight search, where both legs and the price were verified.
 - The offline tools are covered by `python -B -m unittest discover -s tests`.
 - Live Google Flights execution in Codex Cloud is pending.
