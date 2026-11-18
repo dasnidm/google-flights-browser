@@ -32,6 +32,11 @@ For a known flight number, the skill can check official scheduled times and endp
 
 - Local Chrome returned flight results for BER and HAM to LHR on both January 12 and January 14, 2027, and Explore returned destinations from Berlin.
 - In local Chrome, a Korean-language AI Flight Deals search for BER to anywhere in Europe returned eight recommendations for the requested dates and filters. Selecting the Milan recommendation opened standard flight search, where both legs and the price were verified.
-- The offline tools are covered by `python -B -m unittest discover -s tests`.
-- Codex Cloud Default environment cloned the public repository and passed all seven offline regression tests.
-- In that Cloud run, Google displayed an unusual-traffic interstitial in Chromium before the flight search form loaded. Live Cloud fare lookup remains unverified.
+- Two entries from Munich Airport's public winter timetable produced an unpriced FRA–MUC–LHR candidate for December 2, 2026, with a 75-minute connection. [Source and normalization details](.agents/skills/google-flights-browser/references/planning.md#obtain-multiple-scheduled-flights)
+- All seven offline regression tests passed locally and in the Codex Cloud Default environment. Run them with `python -B -m unittest discover -s tests`.
+
+## Browser runtime
+
+Use the desktop app's local `@Chrome` connection for the live search workflow verified above. Codex Cloud can run the offline planning scripts from the repository with Python. [Chrome extension](https://learn.chatgpt.com/docs/chrome-extension)
+
+In the Cloud test, the shared Chrome tool failed to start. Chromium launched separately in the same VM reached Google's unusual-traffic page before the search form. Live Cloud fares remain unverified, and the test did not isolate the effect of the network from that of the browser session. An Oracle-hosted browser or WireGuard egress remains an untested deployment option.
