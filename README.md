@@ -33,4 +33,5 @@ For a known flight number, the skill can check official scheduled times and endp
 - Local Chrome returned flight results for BER and HAM to LHR on both January 12 and January 14, 2027, and Explore returned destinations from Berlin.
 - In local Chrome, a Korean-language AI Flight Deals search for BER to anywhere in Europe returned eight recommendations for the requested dates and filters. Selecting the Milan recommendation opened standard flight search, where both legs and the price were verified.
 - The offline tools are covered by `python -B -m unittest discover -s tests`.
-- Live Google Flights execution in Codex Cloud is pending.
+- Codex Cloud Default environment cloned the public repository and passed all seven offline regression tests.
+- In that Cloud run, Google displayed an unusual-traffic interstitial in Chromium before the flight search form loaded. Live Cloud fare lookup remains unverified.
