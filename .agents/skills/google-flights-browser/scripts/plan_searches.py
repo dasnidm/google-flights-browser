@@ -8,10 +8,10 @@ from datetime import date, timedelta
 
 
 def airport_codes(values):
-    codes = tuple(dict.fromkeys(code.upper() for code in values))
-    if invalid := [code for code in codes if not re.fullmatch(r"[A-Z]{3}", code)]:
-        raise ValueError(f"Expected three-letter airport codes: {', '.join(invalid)}")
-    return codes
+    values = tuple(values)
+    if invalid := [code for code in values if not isinstance(code, str) or not re.fullmatch(r"[A-Za-z]{3}", code)]:
+        raise ValueError(f"Expected three-letter ASCII airport codes: {', '.join(map(str, invalid))}")
+    return tuple(dict.fromkeys(code.upper() for code in values))
 
 
 def dates_between(start, end):
@@ -19,7 +19,19 @@ def dates_between(start, end):
         yield start + timedelta(days=offset)
 
 
-def planned_dates(args):
+def stay_arrival_offsets(args):
+    if args.arrival_offset_days is not None:
+        if args.nights is None:
+            raise ValueError("Use arrival offsets with --nights.")
+        if args.arrival_offset_days[0] > args.arrival_offset_days[1]:
+            raise ValueError("Arrival offsets must be ordered as MIN MAX.")
+        return args.arrival_offset_days
+    if args.nights is not None and args.return_from is None:
+        return [-1, 2]
+    return None
+
+
+def planned_dates(args, arrival_offsets):
     if args.depart_dates is not None:
         if args.depart_to is not None:
             raise ValueError("Use --depart-to only with --depart-from.")
@@ -40,8 +52,12 @@ def planned_dates(args):
             yield departure.isoformat(), None
             continue
 
-        if args.nights:
-            first, last = (departure + timedelta(days=nights) for nights in args.nights)
+        if arrival_offsets is not None:
+            first = departure + timedelta(days=arrival_offsets[0] + args.nights[0])
+            last = departure + timedelta(days=arrival_offsets[1] + args.nights[1])
+        elif args.nights is not None:
+            # An explicit return window preserves candidates until an actual outbound arrives.
+            first, last = args.return_from, args.return_to
         else:
             first, last = departure, args.return_to
 
@@ -56,7 +72,8 @@ def planned_dates(args):
 def plan(args):
     origins = airport_codes(args.origins)
     destinations = airport_codes(args.destinations)
-    date_pairs = tuple(planned_dates(args))
+    arrival_offsets = stay_arrival_offsets(args)
+    date_pairs = tuple(planned_dates(args, arrival_offsets))
     routes = (
         (origin, destination)
         for origin, destination in itertools.product(origins, destinations)
@@ -72,7 +89,16 @@ def plan(args):
                 "departure_date": departure,
                 "return_date": returning,
             })
-    return {"scenario_count": len(scenarios), "scenarios": scenarios}
+    report = {"scenario_count": len(scenarios), "scenarios": scenarios}
+    if args.nights is not None:
+        report["stay"] = {
+            "minimum_nights": args.nights[0],
+            "maximum_nights": args.nights[1],
+            "basis": "destination_local_arrival_to_return_departure",
+            "outbound_arrival_offset_days": arrival_offsets,
+            "requires_itinerary_check": True,
+        }
+    return report
 
 
 def main():
@@ -85,7 +111,11 @@ def main():
     parser.add_argument("--depart-to", type=date.fromisoformat)
     parser.add_argument("--return-from", type=date.fromisoformat)
     parser.add_argument("--return-to", type=date.fromisoformat)
-    parser.add_argument("--nights", nargs=2, type=int, metavar=("MIN", "MAX"))
+    parser.add_argument("--nights", nargs=2, type=int, metavar=("MIN", "MAX"),
+                        help="Nights from local outbound arrival to local return departure.")
+    parser.add_argument("--arrival-offset-days", nargs=2, type=int, metavar=("MIN", "MAX"),
+                        help="Outbound arrival calendar date minus departure calendar date. "
+                             "Defaults to -1 through 2 with nights and no return window.")
     args = parser.parse_args()
     try:
         result = plan(args)

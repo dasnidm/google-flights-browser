@@ -83,7 +83,7 @@ def index_quotes(quotes, ids):
 def find_journeys(args, routes, times):
     lower = timedelta(minutes=args.min_connection)
     upper = timedelta(minutes=args.max_connection)
-    hubs = set(airport_codes(args.via or []))
+    hubs = set(args.via)
 
     def departing(airport, start, end):
         departures = times.get(airport, [])
@@ -107,6 +107,7 @@ def find_journeys(args, routes, times):
 def rank(args, data):
     args.origin, = airport_codes([args.origin])
     args.destination, = airport_codes([args.destination])
+    args.via = airport_codes(args.via or [])
     if args.origin == args.destination or args.depart_after > args.depart_before:
         raise ValueError("Use distinct endpoints and an ordered departure window.")
     if args.max_legs < 1 or not 0 <= args.min_connection <= args.max_connection:
@@ -138,6 +139,17 @@ def rank(args, data):
     priced.sort(key=lambda row: (row["quote"]["amount_minor"], *order(row)))
     unpriced.sort(key=order)
     return {
+        "search_bounds": {
+            "origin": args.origin,
+            "destination": args.destination,
+            "depart_after": args.depart_after.isoformat(),
+            "depart_before": args.depart_before.isoformat(),
+            "arrive_by": args.arrive_by.isoformat() if args.arrive_by is not None else None,
+            "max_legs": args.max_legs,
+            "min_connection_minutes": args.min_connection,
+            "max_connection_minutes": args.max_connection,
+            "allowed_intermediate_airports": list(args.via) if args.via else None,
+        },
         "journey_count": len(priced) + len(unpriced),
         "priced": priced,
         "unpriced": unpriced,

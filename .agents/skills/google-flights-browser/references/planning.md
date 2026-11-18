@@ -9,9 +9,19 @@ python scripts/plan_searches.py --origins BER HAM --destinations LHR --depart-da
 python scripts/plan_searches.py --origins BER HAM --destinations LHR LGW --depart-from 2027-02-01 --depart-to 2027-02-07 --nights 4 6
 ```
 
-Add `--return-from YYYY-MM-DD --return-to YYYY-MM-DD` for a fixed return window. The window intersects `--nights MIN MAX` if supplied. With only a return window, include valid same-day returns and check time-of-day feasibility in the results. Repeated codes are deduplicated and identical origin/destination pairs are excluded. Track completion by scenario ID so a failed query cannot disappear from coverage.
+Add `--return-from YYYY-MM-DD --return-to YYYY-MM-DD` for a fixed return window. With a stay-length constraint, an explicit return window is searched in full until actual outbound arrival dates are known. `--nights MIN MAX` counts from destination-local outbound arrival to destination-local return departure. With no explicit return window, the planner generates candidates using arrival offsets of −1 through +2 calendar days from outbound departure. Set `--arrival-offset-days MIN MAX` to cover the known arrival range, including longer arrivals where relevant. An explicit offset range also narrows an explicit return window. Every generated date remains provisional until the selected itinerary satisfies the stay and chronological order. With only a return window, include valid same-day returns and check time-of-day feasibility in the results. Repeated codes are deduplicated and identical origin/destination pairs are excluded. Track completion by scenario ID so a failed query cannot disappear from coverage.
 
 For fixed destinations, use a relevant public airport or airline list for potential origins. Verify route direction and season. If the user allows connections, a list of nonstop origins is partial coverage. [BER's published route list](https://ber.berlin-airport.de/en/flying/destinations-from-ber.html) and [Heathrow's timetable](https://www.heathrow.com/flight-timetable) are examples of scoped inputs.
+
+## Check official times by flight number
+
+Start with the full flight designator and the local departure date. Use the airline's official flight-status or timetable search, select the matching departure and arrival airport, and use the operating carrier's number for codeshares when available. Record the scheduled local departure and arrival date and time, airport codes, source URL, and any separate estimated or actual time. Keep the next-day arrival date explicit. Check the source's date coverage. If a distant date is missing from a live status page, try the airline's regular timetable or an airport's seasonal timetable for the applicable dates.
+
+- [Lufthansa timetable and flight status](https://www.lufthansa.com/de/en/timetable-and-flight-status)
+- [easyJet Flight Tracker](https://www.easyjet.com/en/flight-tracker)
+- [Korean Air flight information](https://www.koreanair.com/contents/booking/flight-info?hl=en)
+- [Berlin Brandenburg departures and arrivals](https://ber.berlin-airport.de/en/fliegen/abfluege-ankuenfte.html)
+- [Munich Airport flight search and seasonal timetable](https://www.munich-airport.com/flugsuche-89523)
 
 ## Keep both endpoints fixed
 
@@ -44,4 +54,4 @@ Save a UTF-8 JSON object with `flights` and optional `quotes`. Give each physica
 python scripts/enumerate_timetable.py schedule.json --origin BER --destination LHR --depart-after 2027-02-01T00:00:00+01:00 --depart-before 2027-02-01T23:59:59+01:00 --max-legs 2 --min-connection 60 --max-connection 360
 ```
 
-Use `--via` to restrict intermediate airports and `--arrive-by` for a deadline. Departures and connection limits are inclusive. A connection must be at the same airport and satisfy the supplied time window. Account for carrier, terminal, protection, and baggage rules before treating generated itineraries as bookable. Supply actual quotes for the complete ordered flight IDs, in one currency and for the same passengers, cabin, and included services. `amount_minor` is the currency's minor unit, such as euro cents. Quotes specific to one flight apply to that one-flight itinerary. The script reports unpriced journeys by elapsed time and does not fetch schedules or quotes.
+Use `--via` to restrict intermediate airports and `--arrive-by` for a deadline. Departures and connection limits are inclusive. Each result includes `search_bounds` with the effective endpoints, date-time limits, segment limit, connection limits and hub filter, even if no journey is found. A connection must be at the same airport and satisfy the supplied time window. Account for carrier, terminal, protection, and baggage rules before treating generated itineraries as bookable. Supply actual quotes for the complete ordered flight IDs, in one currency and for the same passengers, cabin, and included services. `amount_minor` is the currency's minor unit, such as euro cents. Quotes specific to one flight apply to that one-flight itinerary. The script reports unpriced journeys by elapsed time and does not fetch schedules or quotes.

@@ -21,10 +21,12 @@ With the origin fixed and destination open, the skill can use Google's AI Flight
 
 Both scripts run with Python 3.9+ and the standard library.
 
-- [Plan searches](.agents/skills/google-flights-browser/scripts/plan_searches.py) lists airport/date combinations for the browser, including valid round-trip stay lengths.
+- [Plan searches](.agents/skills/google-flights-browser/scripts/plan_searches.py) lists airport/date combinations for the browser, including provisional return dates for the requested stay lengths.
 - [Enumerate a timetable](.agents/skills/google-flights-browser/scripts/enumerate_timetable.py) lists one-way journeys with fixed endpoints, an optional set of connection airports, and explicit elapsed connection limits. It accepts a supplied schedule and optional quotes for exact flight combinations. It ranks comparable quotes by price and places journeys without quotes in a separate list. [Input format and examples](.agents/skills/google-flights-browser/references/planning.md)
 
 A schedule establishes which journeys fit the modeled conditions. Ticket prices and seat availability depend on the offer, and coverage depends on the supplied timetable and fares. [ATPCO](https://info.atpco.net/how-do-airlines-create-offers)
+
+For a known flight number, the skill can check official scheduled times and endpoints using the airline or airport. [Flight-number lookup sources](.agents/skills/google-flights-browser/references/planning.md#check-official-times-by-flight-number)
 
 ## Verification
 
